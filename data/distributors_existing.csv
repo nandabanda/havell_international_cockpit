@@ -1,0 +1,13 @@
+distributor_id,distributor_name,country,region,city,assigned_micro_market_id,coverage_strength_0_1,warehouse_capacity_index,credit_strength_index,service_level_index,last_90d_sell_in_value,active_skus
+D-001,Distributor-001,UAE,UAE,Abu Dhabi,MM-UA-ABU-046,0.7,82,83,56,11555307,134
+D-002,Distributor-002,UAE,UAE,Abu Dhabi,MM-UA-ABU-020,0.31,87,84,78,11317907,187
+D-003,Distributor-003,UAE,UAE,Abu Dhabi,MM-UA-ABU-015,0.57,66,61,46,4261949,289
+D-004,Distributor-004,Saudi,KSA,Jeddah,MM-SA-JED-006,0.87,48,67,50,6557322,86
+D-005,Distributor-005,Indonesia,Sumatra,Jakarta,MM-IN-JAK-029,0.28,85,56,70,10370254,168
+D-006,Distributor-006,UAE,UAE,Abu Dhabi,MM-UA-ABU-032,0.33,89,80,77,10437667,113
+D-007,Distributor-007,UAE,UAE,Abu Dhabi,MM-UA-ABU-032,0.84,57,42,57,16300226,216
+D-008,Distributor-008,India,North,Bengaluru,MM-IN-BEN-004,0.76,50,86,61,13502245,80
+D-009,Distributor-009,UAE,UAE,Abu Dhabi,MM-UA-ABU-046,0.9,54,43,62,4322541,113
+D-010,Distributor-010,Saudi,KSA,Riyadh,MM-SA-RIY-048,0.48,86,55,76,10299789,225
+D-011,Distributor-011,Indonesia,Sumatra,Bandung,MM-IN-BAN-038,0.62,63,87,57,5190239,229
+D-012,Distributor-012,India,South,Delhi,MM-IN-DEL-060,0.23,62,84,77,19852538,196

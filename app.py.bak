@@ -1,0 +1,16 @@
+import streamlit as st
+from core.ui_theme import apply_ivory, pills, section
+
+st.set_page_config(page_title="Havell International Cockpit", layout="wide")
+apply_ivory()
+
+st.title("Havell International Cockpit")
+st.caption("International Growth Operating System — Control Tower with separate engines for Hunting (Projects/OEMs) and Farming (Distributors).")
+
+pills([
+    "Clean navigation (pages only)",
+    "Ivory executive UI",
+    "Demo Mode supported"
+])
+
+section("How to use", "Open the modules from the left menu: Control Tower, Hunting, Distributor Development, Farming, RGM, Supply Sync.")

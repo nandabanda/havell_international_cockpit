@@ -1,0 +1,6 @@
+opportunity_id,stage,event_type,event_date,reason_code,reason_notes
+HNT-0001,Qualification,EXIT,2026-01-28,INFO_MISSING,Awaiting customer documents
+HNT-0001,Technical,STALL,2026-02-18,CUSTOMER_DELAY,Customer delayed technical signoff
+HNT-0002,Proposal,STALL,2026-02-22,APPROVAL_PENDING,Margin exception approval pending
+HNT-0003,Negotiation,EXIT,2026-02-25,PRICE_PUSHBACK,Price negotiation escalated
+HNT-0004,Proposal,EXIT,2026-02-10,LOST_COMPETITOR,Lost to competitor on price

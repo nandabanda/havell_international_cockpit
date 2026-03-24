@@ -1,0 +1,305 @@
+from pathlib import Path
+import pandas as pd
+import streamlit as st
+import json
+
+from core.ui_theme import apply_ivory, section
+
+st.set_page_config(page_title="Farming Engine", layout="wide")
+apply_ivory()
+
+OUT = Path("out")
+
+# ----------------------------
+# Safe readers
+# ----------------------------
+def read_csv_safe(p: Path) -> pd.DataFrame:
+    try:
+        return pd.read_csv(p) if p.exists() else pd.DataFrame()
+    except Exception:
+        return pd.DataFrame()
+
+def read_json_safe(p: Path):
+    try:
+        if p.exists():
+            return json.loads(p.read_text())
+        return {}
+    except Exception:
+        return {}
+
+# ----------------------------
+# Load artifacts
+# ----------------------------
+dist_summary = read_csv_safe(OUT / "farming_distributor_summary.csv")
+sku_weekly = read_csv_safe(OUT / "farming_sku_weekly.csv")
+stress_sku = read_csv_safe(OUT / "supply_stress_sku.csv")
+resolution = read_csv_safe(OUT / "supply_resolution_actions.csv")
+network_summary = read_json_safe(OUT / "farming_network_summary.json")
+
+# ----------------------------
+# Header
+# ----------------------------
+st.title(
+st.markdown("")
+
+# =============================
+# FARMING Sections (same page)
+# =============================
+SECTIONS = [
+    "Distributor Revenue Intelligence",
+    "Active Distributor Governance (DoC / Health)",
+]
+farm_section = st.selectbox("Farming Sections", SECTIONS, index=1, key="farm_section_select")
+st.markdown("")
+
+
+if farm_section == "Distributor Revenue Intelligence":
+    # ---- Distributor-native Revenue Intelligence (Hunting skeleton inside Farming) ----
+    import numpy as np
+    import pandas as pd
+    import plotly.express as px
+    import plotly.graph_objects as go
+    from datetime import datetime
+    from pathlib import Path
+    import json
+    import streamlit as st
+
+    ROOT = Path(__file__).resolve().parents[1]
+    OUT = ROOT / "out"
+
+    def safe_csv(path):
+        if not path.exists():
+            return pd.DataFrame()
+        try:
+            return pd.read_csv(path)
+        except Exception:
+            return pd.DataFrame()
+
+    df = safe_csv(OUT / "farming_distributor_summary.csv")
+    df_sku = safe_csv(OUT / "farming_sku_weekly.csv")
+    df_stress = safe_csv(OUT / "supply_stress_sku.csv")
+    df_act = safe_csv(OUT / "supply_resolution_actions.csv")
+
+    st.markdown("### Distributor Revenue Intelligence")
+    st.caption("Sell-in • Offtake • Net Realization • Schemes • Claims • DOH • Fill Rate • Price Corridor")
+
+    # Simple column inference (won’t crash if missing)
+    def pick(df, cols):
+        for c in cols:
+            if c in df.columns:
+                return c
+        return None
+
+    sellin = pick(df, ["sell_in_cr","sellin_cr","gross_sales_cr","gross_sales","net_sales_cr","net_sales"])
+    offtake = pick(df, ["sell_out_cr","secondary_sales_cr","offtake_cr","offtake_value_cr"])
+    nr = pick(df, ["net_realization_pct","nr_pct","nr"])
+    scheme = pick(df, ["scheme_spend_cr","trade_spend_cr","spend_cr"])
+    claims = pick(df, ["claims_deductions_cr","claims_cr","deductions_cr","returns_cr"])
+    doh = pick(df, ["avg_doh","doh","days_on_hand"])
+    fill = pick(df, ["fill_rate","service_level","otif"])
+    corridor = pick(df, ["corridor_breach_count","price_corridor_breaches","corridor_breaches"])
+
+    def num(x): 
+        return pd.to_numeric(x, errors="coerce")
+
+    k1,k2,k3,k4,k5,k6 = st.columns([0.17,0.17,0.17,0.17,0.17,0.15], gap="large")
+
+    with k1:
+        v = float(num(df[sellin]).sum()) if (sellin and not df.empty) else np.nan
+        st.metric("Sell-In (Primary)", f"{v:,.1f} Cr" if not np.isnan(v) else "—")
+    with k2:
+        if offtake and not df.empty:
+            v = float(num(df[offtake]).sum())
+            st.metric("Offtake (Secondary)", f"{v:,.1f} Cr" if not np.isnan(v) else "—")
+        else:
+            st.metric("Offtake (Secondary)", "—")
+    with k3:
+        v = float(num(df[nr]).mean()) if (nr and not df.empty) else np.nan
+        st.metric("Net Realization", f"{v:.1f}%" if not np.isnan(v) else "—")
+    with k4:
+        v = float(num(df[scheme]).sum()) if (scheme and not df.empty) else np.nan
+        st.metric("Schemes / Spend", f"{v:,.1f} Cr" if not np.isnan(v) else "—")
+    with k5:
+        v = float(num(df[claims]).sum()) if (claims and not df.empty) else np.nan
+        st.metric("Claims / Deductions", f"{v:,.1f} Cr" if not np.isnan(v) else "—")
+    with k6:
+        v = float(num(df[doh]).mean()) if (doh and not df.empty) else np.nan
+        st.metric("Avg DOH", f"{v:.1f}" if not np.isnan(v) else "—")
+
+    st.markdown("---")
+    left, right = st.columns([0.72, 0.28], gap="large")
+
+    with left:
+        st.subheader("Evidence")
+        a,b,c = st.columns(3, gap="large")
+
+        with a:
+            st.caption("Net Realization Bridge")
+            gross = float(num(df[sellin]).sum()) if (sellin and not df.empty) else 0.0
+            schemes = float(num(df[scheme]).sum()) if (scheme and not df.empty) else 0.0
+            cl = float(num(df[claims]).sum()) if (claims and not df.empty) else 0.0
+            netv = gross - schemes - cl
+            fig = go.Figure(go.Waterfall(
+                orientation="v",
+                measure=["absolute","relative","relative","total"],
+                x=["Sell-In","Schemes (-)","Claims (-)","Net"],
+                y=[gross, -schemes, -cl, netv]
+            ))
+            fig.update_layout(height=300, margin=dict(l=10,r=10,t=30,b=10))
+            st.plotly_chart(fig, use_container_width=True)
+
+        with b:
+            st.caption("Stock × Movement (SKU view)")
+            sdoh = pick(df_sku, ["doh","days_on_hand"])
+            soff = pick(df_sku, ["sell_out_cr","offtake_cr","value_cr"])
+            sid = pick(df_sku, ["sku","sku_id","material","item"])
+            if not df_sku.empty and sdoh and soff and sid:
+                t = df_sku.copy()
+                t[sdoh] = num(t[sdoh]); t[soff] = num(t[soff])
+                t = t.dropna(subset=[sdoh,soff]).head(500)
+                fig = px.scatter(t, x=sdoh, y=soff, hover_name=sid)
+                fig.update_layout(height=300, margin=dict(l=10,r=10,t=30,b=10))
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.info("Add DOH + offtake in farming_sku_weekly.csv for quadrant view.")
+
+        with c:
+            st.caption("Rhythm Breakers")
+            rows = []
+            if corridor and not df.empty:
+                rows.append(("Corridor breaches", float(num(df[corridor]).sum())))
+            if fill and not df.empty:
+                fv = float(num(df[fill]).mean())
+                rows.append(("Fill rate", fv))
+            if not df_stress.empty:
+                rows.append(("Supply stress rows", len(df_stress)))
+            if rows:
+                st.dataframe(pd.DataFrame(rows, columns=["Exception","Magnitude"]), use_container_width=True, hide_index=True)
+            else:
+                st.info("Add corridor_breach_count / fill_rate / stress artifacts for exceptions.")
+
+    with right:
+        st.subheader("SYDIAI Intelligence Agent")
+        st.caption("Distributor language quick asks")
+        if st.button("Where is NR leaking?", use_container_width=True):
+            st.write("Schemes vs Claims vs Net Realization — see bridge + totals above.")
+        if st.button("What’s stuck?", use_container_width=True):
+            st.write("Use SKU Stock×Movement scatter; pause replenishment for high DOH + low offtake.")
+        if st.button("Corridor breaches", use_container_width=True):
+            st.write("Enforce price list; block ad-hoc discounts; reconcile invoices.")
+
+elif farm_section == "Active Distributor Governance (DoC / Health)":
+
+"🌾 Farming Engine — Active Distributor Governance")
+section(
+    "Purpose",
+    "Manage Days of Cover, replenishment discipline, distributor health, and supply stress in an integrated loop."
+)
+
+# ============================================================
+# 1️⃣ Network Snapshot
+# ============================================================
+st.divider()
+section("1) Network Snapshot", "Executive summary of distributor health.")
+
+if dist_summary.empty:
+    st.warning("Missing out/farming_distributor_summary.csv")
+else:
+    c1, c2, c3, c4 = st.columns(4)
+
+    c1.metric("Distributors", dist_summary["distributor_id"].nunique())
+    c2.metric("Avg Health Score",
+              f"{dist_summary['health_score_0_100'].mean():.1f}"
+              if "health_score_0_100" in dist_summary else "-")
+    c3.metric("Avg Weighted DoC",
+              f"{dist_summary['weighted_doc'].mean():.1f}"
+              if "weighted_doc" in dist_summary else "-")
+    c4.metric("Capital Locked",
+              f"{dist_summary['total_capital_locked'].sum():,.0f}"
+              if "total_capital_locked" in dist_summary else "-")
+
+    st.dataframe(dist_summary.head(200), use_container_width=True)
+
+    st.download_button(
+        "Download farming_distributor_summary.csv",
+        (OUT / "farming_distributor_summary.csv").read_bytes(),
+        file_name="farming_distributor_summary.csv",
+        mime="text/csv",
+        key="dl_farming_summary"
+    )
+
+# ============================================================
+# 2️⃣ Replenishment & SKU View
+# ============================================================
+st.divider()
+section("2) SKU Weekly & Replenishment View", "Velocity-based view of SKU activity.")
+
+if sku_weekly.empty:
+    st.info("Optional file missing: out/farming_sku_weekly.csv")
+else:
+    st.dataframe(sku_weekly.head(400), use_container_width=True)
+
+    st.download_button(
+        "Download farming_sku_weekly.csv",
+        (OUT / "farming_sku_weekly.csv").read_bytes(),
+        file_name="farming_sku_weekly.csv",
+        mime="text/csv",
+        key="dl_farming_sku"
+    )
+
+# ============================================================
+# 3️⃣ Supply Stress Integration
+# ============================================================
+st.divider()
+section("3) Supply Stress Signals", "SKUs or plants under constraint impacting distributor replenishment.")
+
+if stress_sku.empty:
+    st.info("Optional file missing: out/supply_stress_sku.csv")
+else:
+    st.dataframe(stress_sku.head(300), use_container_width=True)
+
+    st.download_button(
+        "Download supply_stress_sku.csv",
+        (OUT / "supply_stress_sku.csv").read_bytes(),
+        file_name="supply_stress_sku.csv",
+        mime="text/csv",
+        key="dl_farming_stress"
+    )
+
+# ============================================================
+# 4️⃣ Resolution Actions
+# ============================================================
+st.divider()
+section("4) Resolution Actions", "System-recommended actions: expedite, rebalance, substitute, throttle.")
+
+if resolution.empty:
+    st.info("Optional file missing: out/supply_resolution_actions.csv")
+else:
+    st.dataframe(resolution.head(300), use_container_width=True)
+
+    st.download_button(
+        "Download supply_resolution_actions.csv",
+        (OUT / "supply_resolution_actions.csv").read_bytes(),
+        file_name="supply_resolution_actions.csv",
+        mime="text/csv",
+        key="dl_farming_resolution"
+    )
+
+# ============================================================
+# 5️⃣ Network JSON Summary (Optional)
+# ============================================================
+st.divider()
+section("5) Network Summary (JSON)", "Compact executive summary artifact.")
+
+if network_summary:
+    st.json(network_summary)
+    st.download_button(
+        "Download farming_network_summary.json",
+        (OUT / "farming_network_summary.json").read_bytes(),
+        file_name="farming_network_summary.json",
+        mime="application/json",
+        key="dl_farming_json"
+    )
+else:
+    st.info("Optional file missing: out/farming_network_summary.json")
+

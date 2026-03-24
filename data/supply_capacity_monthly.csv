@@ -1,0 +1,9 @@
+month_id,plant_id,sku_id,monthly_capacity_qty,primary_region,secondary_plant_id
+2026-02,P1,SKU_A,1800,,P2
+2026-02,P1,SKU_B,1600,,P2
+2026-02,P2,SKU_C,1400,,P1
+2026-02,P2,SKU_D,1200,,P1
+2026-03,P1,SKU_A,1900,,P2
+2026-03,P1,SKU_B,1700,,P2
+2026-03,P2,SKU_C,1500,,P1
+2026-03,P2,SKU_D,1300,,P1

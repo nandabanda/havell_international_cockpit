@@ -1,0 +1,3 @@
+opportunity_id,approval_type,requested_date,status,approved_date,requested_discount_pct,approved_discount_pct,margin_floor_pct,expected_gm_pct,corridor_ok,approver,notes
+HNT-0002,MARGIN_EXCEPTION,2026-02-15,PENDING,,12,,16,14,NO,,
+HNT-0005,SPA_OVERRIDE,2026-02-20,APPROVED,2026-02-22,8,8,16,17,YES,Approver A,Approved within corridor

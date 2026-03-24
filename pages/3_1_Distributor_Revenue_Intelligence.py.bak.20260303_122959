@@ -1,0 +1,98 @@
+import streamlit as st
+import pandas as pd
+import numpy as np
+from pathlib import Path
+
+st.set_page_config(page_title="Distributor Revenue Intelligence", layout="wide")
+
+ROOT = Path(__file__).resolve().parents[1]
+OUT = ROOT / "out"
+
+def safe_csv(fp: Path) -> pd.DataFrame:
+    try:
+        return pd.read_csv(fp)
+    except Exception:
+        return pd.DataFrame()
+
+st.markdown("## 💰 Distributor Revenue Intelligence")
+st.caption("Distributor language: Sell-in • Offtake • Net Realization • Schemes • Claims • DOH • Fill Rate • Price Corridor")
+
+df = safe_csv(OUT / "farming_distributor_summary.csv")
+df_sku = safe_csv(OUT / "farming_sku_weekly.csv")
+df_stress = safe_csv(OUT / "supply_stress_sku.csv")
+df_actions = safe_csv(OUT / "supply_resolution_actions.csv")
+
+def pick(df0, cols):
+    for c in cols:
+        if c in df0.columns:
+            return c
+    return None
+
+mkt = pick(df, ["market","country","region"])
+dist = pick(df, ["distributor_name","distributor_id","distributor"])
+period = pick(df, ["period","week_id","week"])
+
+c1,c2,c3 = st.columns([0.34,0.42,0.24], gap="large")
+with c1:
+    market = st.selectbox("Market", ["ALL"] + (sorted(df[mkt].dropna().astype(str).unique().tolist()) if (mkt and not df.empty) else []), 0)
+with c2:
+    distributor = st.selectbox("Distributor", ["ALL"] + (sorted(df[dist].dropna().astype(str).unique().tolist()) if (dist and not df.empty) else []), 0)
+with c3:
+    per = st.selectbox("Period", ["ALL"] + (sorted(df[period].dropna().astype(str).unique().tolist()) if (period and not df.empty) else []), 0)
+
+def apply(df0):
+    d = df0.copy()
+    if not d.empty:
+        if mkt and market!="ALL": d = d[d[mkt].astype(str)==market]
+        if dist and distributor!="ALL": d = d[d[dist].astype(str)==distributor]
+        if period and per!="ALL": d = d[d[period].astype(str)==per]
+    return d
+
+df = apply(df); df_sku = apply(df_sku); df_stress = apply(df_stress); df_actions = apply(df_actions)
+
+def num(x): return pd.to_numeric(x, errors="coerce")
+sellin = pick(df, ["sell_in_cr","sellin_cr","gross_sales_cr","gross_sales","net_sales_cr","net_sales"])
+offtake = pick(df, ["sell_out_cr","secondary_sales_cr","offtake_cr","offtake_value_cr"])
+nr = pick(df, ["net_realization_pct","net_realization","nr_pct","nr"])
+scheme = pick(df, ["scheme_spend_cr","trade_spend_cr","spend_cr"])
+claims = pick(df, ["claims_deductions_cr","claims_cr","deductions_cr","returns_cr"])
+doh = pick(df, ["avg_doh","doh","days_on_hand"])
+
+k1,k2,k3,k4,k5,k6 = st.columns([0.17,0.17,0.17,0.17,0.17,0.15], gap="large")
+with k1:
+    v = float(num(df[sellin]).sum()) if (sellin and not df.empty) else np.nan
+    st.metric("Sell-In (Primary)", f"{v:,.1f} Cr" if not np.isnan(v) else "—")
+with k2:
+    v = float(num(df[offtake]).sum()) if (offtake and not df.empty) else np.nan
+    st.metric("Offtake (Secondary)", f"{v:,.1f} Cr" if not np.isnan(v) else "—")
+with k3:
+    v = float(num(df[nr]).mean()) if (nr and not df.empty) else np.nan
+    st.metric("Net Realization", f"{v:.1f}%" if not np.isnan(v) else "—")
+with k4:
+    v = float(num(df[scheme]).sum()) if (scheme and not df.empty) else np.nan
+    st.metric("Schemes / Spend", f"{v:,.1f} Cr" if not np.isnan(v) else "—")
+with k5:
+    v = float(num(df[claims]).sum()) if (claims and not df.empty) else np.nan
+    st.metric("Claims / Deductions", f"{v:,.1f} Cr" if not np.isnan(v) else "—")
+with k6:
+    v = float(num(df[doh]).mean()) if (doh and not df.empty) else np.nan
+    st.metric("Avg DOH", f"{v:.1f}" if not np.isnan(v) else "—")
+
+st.markdown("---")
+a,b = st.columns(2, gap="large")
+with a:
+    st.subheader("Distributor Summary")
+    st.dataframe(df.head(60), use_container_width=True, hide_index=True)
+with b:
+    st.subheader("SKU Weekly")
+    st.dataframe(df_sku.head(60), use_container_width=True, hide_index=True)
+
+c,d = st.columns(2, gap="large")
+with c:
+    st.subheader("Supply Stress (SKU)")
+    st.dataframe(df_stress.head(30), use_container_width=True, hide_index=True)
+with d:
+    st.subheader("Resolution Actions")
+    st.dataframe(df_actions.head(30), use_container_width=True, hide_index=True)
+
+st.info("Next: upgrade to full Hunting-style bridge/quadrant/playbooks UI.")

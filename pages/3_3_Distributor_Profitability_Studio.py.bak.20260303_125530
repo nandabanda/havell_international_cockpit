@@ -1,0 +1,120 @@
+import numpy as np
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+import streamlit as st
+from pathlib import Path
+
+st.set_page_config(page_title="Distributor Profitability Studio", layout="wide")
+
+ROOT = Path(__file__).resolve().parents[1]
+OUT = ROOT / "out"
+
+def safe_csv(fp):
+    try:
+        return pd.read_csv(fp)
+    except Exception:
+        return pd.DataFrame()
+
+def arrow_safe(df: pd.DataFrame) -> pd.DataFrame:
+    """Make df safe for st.dataframe/Arrow by coercing mixed-type numeric columns (e.g., qty with '')."""
+    if df is None or df.empty:
+        return df
+    d = df.copy()
+    for c in d.columns:
+        cl = str(c).lower()
+        if any(k in cl for k in [
+            "qty","quantity","units","cases",
+            "value","sales","revenue",
+            "margin","contribution","cost",
+            "spend","scheme","claim","deduct",
+            "pct","percent","rate","index"
+        ]):
+            d[c] = pd.to_numeric(
+                d[c].astype(str).replace({"": None, "nan": None, "None": None}),
+                errors="coerce"
+            )
+    return df
+    d = df.copy()
+    for c in d.columns:
+        if any(k in c.lower() for k in ["value","sales","margin","contribution","cost","spend","claim","qty"]):
+            d[c] = pd.to_numeric(d[c], errors="coerce")
+    return d
+
+st.markdown("## 💼 Distributor Profitability Studio")
+st.caption("Net realization • Trade spend discipline • Contribution bridge • Margin mix quality • Profit leakage detection")
+
+df = safe_csv(OUT / "farming_distributor_summary.csv")
+
+if df.empty:
+    st.warning("No farming_distributor_summary.csv found in /out")
+    st.stop()
+
+# -----------------------------
+# Filters
+# -----------------------------
+dist_col = next((c for c in df.columns if "distributor" in c.lower()), None)
+period_col = next((c for c in df.columns if "period" in c.lower() or "week" in c.lower()), None)
+
+c1, c2 = st.columns(2)
+with c1:
+    distributor = st.selectbox("Distributor", ["ALL"] + sorted(df[dist_col].astype(str).unique().tolist()), 0)
+with c2:
+    period = st.selectbox("Period", ["ALL"] + sorted(df[period_col].astype(str).unique().tolist()), 0)
+
+if distributor != "ALL":
+    df = df[df[dist_col].astype(str) == distributor]
+if period != "ALL":
+    df = df[df[period_col].astype(str) == period]
+
+# -----------------------------
+# KPI Strip
+# -----------------------------
+def num(col):
+    return pd.to_numeric(df[col], errors="coerce").sum()
+
+gross = next((c for c in df.columns if "gross" in c.lower() and "sales" in c.lower()), None)
+net = next((c for c in df.columns if "net" in c.lower() and "sales" in c.lower()), None)
+spend = next((c for c in df.columns if "spend" in c.lower()), None)
+claims = next((c for c in df.columns if "claim" in c.lower()), None)
+cost = next((c for c in df.columns if "cost" in c.lower()), None)
+contribution = next((c for c in df.columns if "contribution" in c.lower()), None)
+
+gross_v = num(gross) if gross else np.nan
+net_v = num(net) if net else np.nan
+spend_v = num(spend) if spend else np.nan
+claims_v = num(claims) if claims else np.nan
+cost_v = num(cost) if cost else np.nan
+contrib_v = num(contribution) if contribution else (net_v - cost_v if not np.isnan(net_v) and not np.isnan(cost_v) else np.nan)
+
+trade_pct = (spend_v / gross_v * 100) if gross_v else np.nan
+nr_pct = (net_v / gross_v * 100) if gross_v else np.nan
+margin_pct = (contrib_v / net_v * 100) if net_v else np.nan
+
+k1,k2,k3,k4,k5,k6 = st.columns(6)
+k1.metric("Gross Sales", f"{gross_v:,.1f} Cr" if not np.isnan(gross_v) else "—")
+k2.metric("Net Sales", f"{net_v:,.1f} Cr" if not np.isnan(net_v) else "—")
+k3.metric("Trade Spend %", f"{trade_pct:.1f}%" if not np.isnan(trade_pct) else "—")
+k4.metric("Net Realization %", f"{nr_pct:.1f}%" if not np.isnan(nr_pct) else "—")
+k5.metric("Contribution", f"{contrib_v:,.1f} Cr" if not np.isnan(contrib_v) else "—")
+k6.metric("Contribution %", f"{margin_pct:.1f}%" if not np.isnan(margin_pct) else "—")
+
+st.markdown("---")
+
+# -----------------------------
+# Profit Bridge (Waterfall)
+# -----------------------------
+if gross and spend and claims and net and cost:
+    fig = go.Figure(go.Waterfall(
+        orientation="v",
+        measure=["absolute","relative","relative","total","relative","total"],
+        x=["Gross","Trade Spend","Claims","Net Sales","Cost","Contribution"],
+        y=[gross_v, -spend_v, -claims_v, net_v, -cost_v, contrib_v],
+    ))
+    fig.update_layout(title="Distributor Profit Bridge", height=420)
+    st.plotly_chart(fig, use_container_width=True)
+
+st.markdown("### Margin Drivers Table")
+st.dataframe(arrow_safe(arrow_safe)(df.head(50)), use_container_width=True, hide_index=True)
+
+

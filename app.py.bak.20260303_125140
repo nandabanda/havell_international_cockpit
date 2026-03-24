@@ -1,0 +1,37 @@
+import streamlit as st
+
+st.set_page_config(page_title="Havell International Control Tower", layout="wide")
+
+# Optional: small sidebar branding / help
+with st.sidebar:
+    st.markdown("## 🌍 Havell International")
+    st.caption("Enterprise Control Tower")
+    st.markdown("---")
+
+# --- Grouped navigation ---
+# NOTE: paths are relative to project root
+pages = {
+    "CONTROL TOWER": [
+        st.Page("pages/0_Control_Tower.py", title="Control Tower", icon="🛰️"),
+    ],
+    "HUNTING": [
+        st.Page("pages/1_Hunting_Cockpit.py", title="Hunting Cockpit", icon="🎯"),
+        st.Page("pages/1_1_Business_Development_Studio.py", title="Business Development Studio", icon="🧭"),
+        st.Page("pages/1_2_Institutional_Revenue_Intelligence.py", title="Institutional Revenue Intelligence", icon="💸"),
+        st.Page("pages/1_3_Institutional_Supply_Orchestration.py", title="Institutional Supply Orchestration", icon="📦"),
+        st.Page("pages/1_4_Channel_Profitability_Studio.py", title="Channel Profitability Studio", icon="📈"),
+    ],
+    "FARMING": [
+        st.Page("pages/3_Farming_Engine.py", title="Farming Cockpit", icon="🌾"),
+        st.Page("pages/3_1_Distributor_Revenue_Intelligence.py", title="Distributor Revenue Intelligence", icon="💰"),
+        st.Page("pages/3_2_Distributor_Supply_Orchestration.py", title="Distributor Supply Orchestration", icon="🚚"),
+        st.Page("pages/2_1_Distributor_Development.py", title="Distributor Development", icon="🧩"),
+    ],
+    "GOVERNANCE": [
+        st.Page("pages/4_RGM_Guardrails.py", title="RGM Guardrails", icon="🛡️"),
+        st.Page("pages/5_Supply_Sync.py", title="Supply Sync", icon="🔁"),
+    ],
+}
+
+pg = st.navigation(pages)
+pg.run()

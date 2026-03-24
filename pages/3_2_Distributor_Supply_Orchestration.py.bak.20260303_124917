@@ -1,0 +1,195 @@
+import json
+from pathlib import Path
+from datetime import datetime
+
+import numpy as np
+import pandas as pd
+import plotly.express as px
+import streamlit as st
+
+st.set_page_config(page_title="Distributor Supply Orchestration", layout="wide")
+
+ROOT = Path(__file__).resolve().parents[1]
+OUT = ROOT / "out"
+
+ART = {
+    "dist": OUT / "farming_distributor_summary.csv",
+    "sku": OUT / "farming_sku_weekly.csv",
+    "stress": OUT / "supply_stress_sku.csv",
+    "actions": OUT / "supply_resolution_actions.csv",
+    "net": OUT / "farming_network_summary.json",
+    "decisions": OUT / "decisions.csv",
+    "audit": OUT / "audit_log.csv",
+}
+
+def now_ts():
+    return datetime.now().isoformat(timespec="seconds")
+
+def safe_csv(fp: Path) -> pd.DataFrame:
+    try:
+        return pd.read_csv(fp)
+    except Exception:
+        return pd.DataFrame()
+
+def safe_json(fp: Path) -> dict:
+    try:
+        return json.loads(fp.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+def arrow_safe(df: pd.DataFrame) -> pd.DataFrame:
+    if df is None or df.empty:
+        return df
+    d = df.copy()
+    for c in d.columns:
+        cl = str(c).lower()
+        if any(k in cl for k in ["qty","quantity","doh","days","fill","otif","service","score","severity","confidence","value","sales","impact","units","cases"]):
+            d[c] = pd.to_numeric(d[c].astype(str).replace({"": None, "nan": None, "None": None}), errors="coerce")
+    return d
+
+def pick(df: pd.DataFrame, cols):
+    for c in cols:
+        if c in df.columns:
+            return c
+    return None
+
+def append_csv(path: Path, rec: dict):
+    df = pd.DataFrame([rec])
+    if path.exists():
+        old = pd.read_csv(path)
+        out = pd.concat([old, df], ignore_index=True)
+    else:
+        out = df
+    out.to_csv(path, index=False)
+
+st.markdown("## 🚚 Distributor Supply Orchestration")
+st.caption("Service Pulse • DOH discipline • Supply stress radar • Resolution playbooks • Governance")
+
+net = safe_json(ART["net"])
+if net:
+    st.info(f"Network summary loaded • distributors: {net.get('distributors', net.get('distributor_count','—'))}")
+
+df_dist = safe_csv(ART["dist"])
+df_sku = safe_csv(ART["sku"])
+df_stress = safe_csv(ART["stress"])
+df_actions = safe_csv(ART["actions"])
+
+# Filters (distributor language)
+mkt = pick(df_dist, ["market","country","region"])
+dist = pick(df_dist, ["distributor_name","distributor_id","distributor"])
+period = pick(df_dist, ["period","week_id","week"])
+
+c1,c2,c3 = st.columns([0.34,0.42,0.24], gap="large")
+with c1:
+    market = st.selectbox("Market", ["ALL"] + (sorted(df_dist[mkt].dropna().astype(str).unique().tolist()) if (mkt and not df_dist.empty) else []), 0)
+with c2:
+    distributor = st.selectbox("Distributor", ["ALL"] + (sorted(df_dist[dist].dropna().astype(str).unique().tolist()) if (dist and not df_dist.empty) else []), 0)
+with c3:
+    per = st.selectbox("Period", ["ALL"] + (sorted(df_dist[period].dropna().astype(str).unique().tolist()) if (period and not df_dist.empty) else []), 0)
+
+def apply(df0: pd.DataFrame) -> pd.DataFrame:
+    d = df0.copy()
+    if d.empty:
+        return d
+    if mkt and market != "ALL": d = d[d[mkt].astype(str) == market]
+    if dist and distributor != "ALL": d = d[d[dist].astype(str) == distributor]
+    if period and per != "ALL": d = d[d[period].astype(str) == per]
+    return d
+
+df_dist = apply(df_dist)
+df_sku = apply(df_sku)
+df_stress = apply(df_stress)
+df_actions = apply(df_actions)
+
+# KPI strip
+def num(x): return pd.to_numeric(x, errors="coerce")
+doh = pick(df_dist, ["avg_doh","doh","days_on_hand"])
+fill = pick(df_dist, ["fill_rate","service_level","otif"])
+stockouts = pick(df_dist, ["stockout_sku_count","stockouts","oos_skus"])
+late = pick(df_dist, ["late_lines_pct","late_pct","late_lines"])
+stress_cnt = len(df_stress) if not df_stress.empty else 0
+
+avg_doh = float(num(df_dist[doh]).mean()) if (doh and not df_dist.empty) else np.nan
+fill_v = float(num(df_dist[fill]).mean()) if (fill and not df_dist.empty) else np.nan
+oos_v = float(num(df_dist[stockouts]).sum()) if (stockouts and not df_dist.empty) else np.nan
+late_v = float(num(df_dist[late]).mean()) if (late and not df_dist.empty) else np.nan
+
+k1,k2,k3,k4,k5 = st.columns(5, gap="large")
+with k1: st.metric("Avg DOH", f"{avg_doh:.1f}" if not np.isnan(avg_doh) else "—")
+with k2: st.metric("Fill / OTIF", f"{fill_v:.1f}%" if not np.isnan(fill_v) else "—")
+with k3: st.metric("Stockout SKUs", f"{oos_v:.0f}" if not np.isnan(oos_v) else "—")
+with k4: st.metric("Late Lines", f"{late_v:.1f}%" if not np.isnan(late_v) else "—")
+with k5: st.metric("Stress Rows", f"{stress_cnt}")
+
+st.markdown("---")
+tabs = st.tabs(["Service Pulse", "Supply Stress Radar", "Resolution Playbooks", "Governance"])
+
+with tabs[0]:
+    st.subheader("Service Pulse")
+    sdoh = pick(df_sku, ["doh","days_on_hand"])
+    soff = pick(df_sku, ["sell_out_cr","offtake_cr","value_cr","sales_cr"])
+    sku = pick(df_sku, ["sku","sku_id","material","item"])
+    if not df_sku.empty and sdoh and soff and sku:
+        t = df_sku.copy()
+        t[sdoh] = num(t[sdoh]); t[soff] = num(t[soff])
+        t = t.dropna(subset=[sdoh,soff]).head(800)
+        fig = px.scatter(t, x=sdoh, y=soff, hover_name=sku)
+        fig.update_layout(height=420, margin=dict(l=10,r=10,t=30,b=10))
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.info("Add DOH + offtake/value columns in out/farming_sku_weekly.csv to enable the movement map.")
+    st.dataframe(arrow_safe(df_sku.head(120)), use_container_width=True, hide_index=True)
+
+with tabs[1]:
+    st.subheader("Supply Stress Radar")
+    if df_stress.empty:
+        st.info("No rows in out/supply_stress_sku.csv for this selection.")
+    else:
+        score = pick(df_stress, ["stress_score","risk_score","severity","stress"])
+        sku = pick(df_stress, ["sku","sku_id","material","item"])
+        if score and sku:
+            t = df_stress.copy()
+            t[score] = num(t[score]).fillna(0)
+            top = t.sort_values(score, ascending=False).head(25)
+            fig = px.bar(top, x=sku, y=score)
+            fig.update_layout(height=420, margin=dict(l=10,r=10,t=30,b=10))
+            st.plotly_chart(fig, use_container_width=True)
+        st.dataframe(arrow_safe(df_stress.head(200)), use_container_width=True, hide_index=True)
+
+with tabs[2]:
+    st.subheader("Resolution Playbooks")
+    if df_actions.empty:
+        st.info("No rows in out/supply_resolution_actions.csv for this selection.")
+    else:
+        st.dataframe(arrow_safe(df_actions.head(300)), use_container_width=True, hide_index=True)
+
+    st.markdown("### Log a governed decision")
+    decision = st.text_input("Decision", placeholder="Expedite / Reallocate / Pause / Release / Replenish…")
+    owner = st.selectbox("Owner", ["Supervisor","Supply Head","Commercial Head","CFO"], 0)
+    notes = st.text_area("Notes", placeholder="Reason + scope + timeline + execution owner")
+    if st.button("Log decision", type="primary"):
+        rec = {
+            "ts": now_ts(),
+            "module": "FARMING",
+            "page": "Distributor Supply Orchestration",
+            "market": market, "distributor": distributor, "period": per,
+            "owner": owner,
+            "decision": decision,
+            "notes": notes or "",
+        }
+        append_csv(ART["decisions"], rec)
+        append_csv(ART["audit"], {"ts": rec["ts"], "event": "DECISION_LOGGED", "module": "FARMING", "page": rec["page"], "owner": owner, "notes": rec["notes"]})
+        st.success("Logged to out/decisions.csv and out/audit_log.csv")
+
+with tabs[3]:
+    st.subheader("Governance & Audit")
+    if ART["decisions"].exists():
+        st.markdown("#### Decisions")
+        st.dataframe(arrow_safe(pd.read_csv(ART["decisions"]).tail(200)), use_container_width=True, hide_index=True)
+    else:
+        st.info("No out/decisions.csv yet.")
+    if ART["audit"].exists():
+        st.markdown("#### Audit log")
+        st.dataframe(arrow_safe(pd.read_csv(ART["audit"]).tail(200)), use_container_width=True, hide_index=True)
+    else:
+        st.info("No out/audit_log.csv yet.")

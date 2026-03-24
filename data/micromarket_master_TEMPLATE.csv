@@ -1,0 +1,4 @@
+micro_market_id,country,region,city,district,lat,lng,population_index,affluence_index,construction_velocity_index,infrastructure_spend_index,industrial_cluster_index,retail_density_index,channel_mix_modern_pct,channel_mix_gt_pct,competitive_intensity_index,logistics_access_index,demand_proxy_index,growth_proxy_index
+MM-IN-DEL-001,India,North,Delhi,Central Delhi,28.632,77.219,78,72,70,66,60,85,45,55,68,90,82,74
+MM-IN-NOI-002,India,North,Noida,Gautam Buddha Nagar,28.535,77.391,70,75,82,78,72,74,55,45,62,82,79,80
+MM-SA-RIY-003,Saudi,KSA,Riyadh,Riyadh Central,24.713,46.675,65,80,58,60,55,70,60,40,75,76,72,62

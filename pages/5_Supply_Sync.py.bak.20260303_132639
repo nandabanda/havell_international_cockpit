@@ -1,0 +1,137 @@
+# --- NEVER BLANK HEADER (do not remove) ---
+import streamlit as st
+st.set_page_config(page_title="Supply Sync", layout="wide")
+st.markdown("## 🧭 Supply Sync — Unified Weekly Command View")
+st.caption("One room for decisions: Hunting approvals + Supply stress + Resolution plan + Governance")
+st.divider()
+# --- end header ---
+
+
+try:
+    import streamlit as st
+    from core.ui_theme import apply_ivory, section
+    import pandas as pd
+    def arrow_safe(df):
+        """Arrow-safe rendering: coerces mixed-type numeric columns (e.g., qty with '')."""
+        if df is None:
+            return df
+        # Some callers may pass non-DF accidentally; fail soft
+        if not hasattr(df, "columns"):
+            return df
+        if getattr(df, "empty", False):
+            return df
+        d = df.copy()
+        for c in d.columns:
+            cl = str(c).lower()
+            if any(k in cl for k in [
+                "qty","quantity","units","cases",
+                "value","sales","revenue","impact","risk",
+                "doh","days","fill","otif","service",
+                "score","severity","confidence",
+                "short","gap","stock","inv","cost","margin"
+            ]):
+                d[c] = pd.to_numeric(
+                    d[c].astype(str).replace({"": None, "nan": None, "None": None}),
+                    errors="coerce"
+                )
+        return d
+
+    st.set_page_config(page_title="Supply Sync", layout="wide")
+    apply_ivory()
+
+    st.title("Supply Chain Synchronization")
+    section("Scope", "Pipeline demand signals + distributor replenishment signals + inventory imbalance + network triggers.")
+    st.info("Next build: forward demand signal + inventory balance matrix + rebalance shortlist.")
+
+except Exception as e:
+    st.error("Supply Sync page failed before rendering the body.")
+    st.exception(e)
+    st.stop()
+
+import os
+import pandas as pd
+import json
+
+OUT_DIR = "out"
+
+def safe_read_csv(name):
+    path = os.path.join(OUT_DIR, name)
+    if not os.path.exists(path):
+        return None
+    df = pd.read_csv(path)
+    for col in df.columns:
+        if df[col].dtype == "object":
+            try:
+                df[col] = pd.to_numeric(df[col])
+            except:
+                pass
+    return df
+
+def safe_read_json(name):
+    path = os.path.join(OUT_DIR, name)
+    if not os.path.exists(path):
+        return None
+    with open(path) as f:
+        return json.load(f)
+
+st.divider()
+st.subheader("A) Executive Stress Snapshot")
+
+hunting_signal = safe_read_csv("hunting_forward_signal.csv")
+supply_stress = safe_read_csv("supply_stress_sku.csv")
+plant_stress = safe_read_csv("supply_stress_plant.csv")
+resolution = safe_read_csv("supply_resolution_actions.csv")
+
+col1, col2, col3, col4 = st.columns(4)
+
+col1.metric("Hunting Pressure",
+            0 if hunting_signal is None else len(hunting_signal))
+
+col2.metric("SKU Stress",
+            0 if supply_stress is None else len(supply_stress))
+
+col3.metric("Plant Stress",
+            0 if plant_stress is None else len(plant_stress))
+
+col4.metric("Resolution Actions",
+            0 if resolution is None else len(resolution))
+
+st.divider()
+st.subheader("B) Hunting Forward Signal")
+if hunting_signal is not None:
+    st.dataframe(hunting_signal.head(20), use_container_width=True)
+else:
+    st.info("No hunting_forward_signal.csv found.")
+
+st.divider()
+st.subheader("C) Supply Stress — SKU")
+if supply_stress is not None:
+    st.dataframe(supply_stress.head(20), use_container_width=True)
+else:
+    st.info("No supply_stress_sku.csv found.")
+
+st.divider()
+st.subheader("D) Supply Stress — Plant")
+if plant_stress is not None:
+    st.dataframe(plant_stress.head(20), use_container_width=True)
+else:
+    st.info("No supply_stress_plant.csv found.")
+
+st.divider()
+st.subheader("E) Resolution Action Queue")
+if resolution is not None:
+    st.dataframe(resolution.head(20), use_container_width=True)
+else:
+    st.info("No supply_resolution_actions.csv found.")
+
+st.divider()
+st.subheader("F) Ordered Decision Logic")
+
+if resolution is not None:
+    ordered = resolution.copy()
+    if "priority_score" in ordered.columns:
+        ordered = ordered.sort_values("priority_score", ascending=False)
+    st.dataframe(ordered.head(20), use_container_width=True)
+else:
+    st.info("No resolution logic available to order.")
+

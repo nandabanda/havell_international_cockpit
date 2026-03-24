@@ -1,0 +1,403 @@
+import json
+from pathlib import Path
+from datetime import datetime
+
+import numpy as np
+import pandas as pd
+import plotly.express as px
+import streamlit as st
+
+# ------------------------------------------------------------
+# NEVER BLANK HEADER
+# ------------------------------------------------------------
+st.set_page_config(page_title="Supply Sync", layout="wide")
+st.markdown("## 🧭 Supply Sync — Unified Weekly Decision Engine")
+st.caption("One room for decisions: Hunting approvals + Supply stress + Resolution plan + Governance")
+st.divider()
+
+ROOT = Path(__file__).resolve().parents[1]
+OUT = ROOT / "out"
+
+FILES = {
+    "hunting_approvals": OUT / "hunting_approval_queue.csv",
+    "hunting_signal": OUT / "hunting_forward_signal.csv",
+    "stress_sku": OUT / "supply_stress_sku.csv",
+    "stress_plant": OUT / "supply_stress_plant.csv",
+    "actions": OUT / "supply_resolution_actions.csv",
+    "summary": OUT / "supply_resolution_summary.json",
+    "decisions": OUT / "decisions.csv",
+    "audit": OUT / "audit_log.csv",
+}
+
+# ------------------------------------------------------------
+# Helpers
+# ------------------------------------------------------------
+def now_ts():
+    return datetime.now().isoformat(timespec="seconds")
+
+def safe_csv(fp: Path) -> pd.DataFrame:
+    try:
+        return pd.read_csv(fp)
+    except Exception:
+        return pd.DataFrame()
+
+def safe_json(fp: Path) -> dict:
+    try:
+        return json.loads(fp.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+def append_csv(path: Path, rec: dict):
+    df = pd.DataFrame([rec])
+    if path.exists():
+        old = pd.read_csv(path)
+        out = pd.concat([old, df], ignore_index=True)
+    else:
+        out = df
+    out.to_csv(path, index=False)
+
+def arrow_safe(df: pd.DataFrame) -> pd.DataFrame:
+    """Arrow-safe rendering: coerces mixed-type numeric columns (e.g., qty with '')."""
+    if df is None or not hasattr(df, "columns") or getattr(df, "empty", False):
+        return df
+    d = df.copy()
+    for c in d.columns:
+        cl = str(c).lower()
+        if any(k in cl for k in [
+            "qty","quantity","units","cases",
+            "value","sales","revenue","impact","risk","var",
+            "doh","days","fill","otif","service",
+            "score","severity","confidence",
+            "short","gap","stock","inv","cost","margin",
+            "priority","eta","week"
+        ]):
+            d[c] = pd.to_numeric(d[c].astype(str).replace({"": None, "nan": None, "None": None}), errors="coerce")
+    return d
+
+def pick(df: pd.DataFrame, cols):
+    for c in cols:
+        if c in df.columns:
+            return c
+    return None
+
+def norm_upper(x):
+    return str(x).strip().upper() if x is not None else ""
+
+# ------------------------------------------------------------
+# Load artifacts
+# ------------------------------------------------------------
+summary = safe_json(FILES["summary"])
+
+h_approval = safe_csv(FILES["hunting_approvals"])
+h_signal = safe_csv(FILES["hunting_signal"])
+stress_sku = safe_csv(FILES["stress_sku"])
+stress_plant = safe_csv(FILES["stress_plant"])
+actions = safe_csv(FILES["actions"])
+
+# ------------------------------------------------------------
+# KPI Strip (uses summary if present; else derived)
+# ------------------------------------------------------------
+k1,k2,k3,k4,k5 = st.columns([0.18,0.18,0.18,0.18,0.28], gap="large")
+
+if summary:
+    total_ex = summary.get("total_exceptions", None)
+    high_sev = summary.get("high_severity", None)
+    open_actions = summary.get("actions_open", None)
+    last_refresh = summary.get("last_refresh", None)
+else:
+    total_ex = (len(stress_sku) if not stress_sku.empty else 0) + (len(stress_plant) if not stress_plant.empty else 0) + (len(h_approval) if not h_approval.empty else 0)
+    high_sev = None
+    open_actions = len(actions) if not actions.empty else 0
+    last_refresh = "—"
+
+pending_approvals = len(h_approval[h_approval.get("status","PENDING").astype(str).str.upper().eq("PENDING")]) if not h_approval.empty and "status" in h_approval.columns else (len(h_approval) if not h_approval.empty else 0)
+
+with k1: st.metric("Total Exceptions", f"{total_ex}" if total_ex is not None else "—")
+with k2: st.metric("Approvals Pending", f"{pending_approvals}")
+with k3: st.metric("Actions Open", f"{open_actions}" if open_actions is not None else "—")
+with k4: st.metric("High Severity", f"{high_sev}" if high_sev is not None else "—")
+with k5: st.metric("Last Refresh", f"{last_refresh}")
+
+st.divider()
+
+# ------------------------------------------------------------
+# Normalize all sources into ONE unified decision queue
+# ------------------------------------------------------------
+def normalize_hunting_approvals(df: pd.DataFrame) -> pd.DataFrame:
+    if df.empty:
+        return df
+    d = df.copy()
+    d["module"] = "HUNTING"
+    d["source"] = "hunting_approval_queue"
+
+    entity = pick(d, ["account","project","partner","customer","opportunity","entity","name","title"])
+    d["entity"] = d[entity].astype(str) if entity else "Hunting item"
+
+    d["exception_type"] = "Approval Required"
+    sev = pick(d, ["severity","risk_band","priority"])
+    d["severity"] = d[sev].astype(str) if sev else "MEDIUM"
+
+    conf = pick(d, ["confidence","conf"])
+    d["confidence"] = d[conf].astype(str) if conf else "MEDIUM"
+
+    status = pick(d, ["status","state"])
+    d["status"] = d[status].astype(str) if status else "PENDING"
+
+    owner = pick(d, ["owner","approver","function"])
+    d["owner"] = d[owner].astype(str) if owner else "Commercial"
+
+    why = pick(d, ["notes","comment","reason","narrative"])
+    d["recommended_action"] = d[why].astype(str) if why else "Review & approve"
+
+    # value at risk proxy (best effort)
+    var = pick(d, ["value_at_risk","value_risk_cr","impact_cr","impact","var"])
+    d["value_at_risk"] = d[var] if var else 0.0
+
+    ts = pick(d, ["ts","created_at","updated_at","week_id"])
+    d["ts"] = d[ts] if ts else ""
+
+    return d[["module","source","entity","exception_type","severity","confidence","status","owner","recommended_action","value_at_risk","ts"]]
+
+def normalize_forward_signal(df: pd.DataFrame) -> pd.DataFrame:
+    """Hunting forward signals are NOT approvals; they are 'risk signals' that should rank below PENDING approvals unless severe."""
+    if df.empty:
+        return df
+    d = df.copy()
+    d["module"] = "HUNTING"
+    d["source"] = "hunting_forward_signal"
+
+    entity = pick(d, ["account","project","partner","customer","entity","name","opportunity","title"])
+    d["entity"] = d[entity].astype(str) if entity else "Hunting signal"
+
+    d["exception_type"] = "Forward Risk Signal"
+    sev = pick(d, ["severity","risk_band","risk_level","signal_band"])
+    d["severity"] = d[sev].astype(str) if sev else "MEDIUM"
+
+    conf = pick(d, ["confidence","conf"])
+    d["confidence"] = d[conf].astype(str) if conf else "MEDIUM"
+
+    d["status"] = "OPEN"
+    owner = pick(d, ["owner","function"])
+    d["owner"] = d[owner].astype(str) if owner else "Commercial"
+
+    why = pick(d, ["narrative","reason","driver","explain"])
+    d["recommended_action"] = d[why].astype(str) if why else "Investigate; prevent slippage"
+
+    var = pick(d, ["value_at_risk","impact_cr","impact","var"])
+    d["value_at_risk"] = d[var] if var else 0.0
+
+    ts = pick(d, ["ts","created_at","updated_at","week_id"])
+    d["ts"] = d[ts] if ts else ""
+
+    return d[["module","source","entity","exception_type","severity","confidence","status","owner","recommended_action","value_at_risk","ts"]]
+
+def normalize_supply_stress(df: pd.DataFrame, level: str) -> pd.DataFrame:
+    if df.empty:
+        return df
+    d = df.copy()
+    d["module"] = "SUPPLY"
+    d["source"] = f"supply_stress_{level.lower()}"
+
+    sku = pick(d, ["sku","sku_id","material","item","product"])
+    plant = pick(d, ["plant","site","factory"])
+    key = sku or plant
+
+    d["entity"] = d[key].astype(str) if key else f"Supply stress ({level})"
+
+    d["exception_type"] = f"Supply Stress ({level})"
+    sev = pick(d, ["severity","risk_band","stress_band","stress_level"])
+    d["severity"] = d[sev].astype(str) if sev else "MEDIUM"
+
+    conf = pick(d, ["confidence","conf"])
+    d["confidence"] = d[conf].astype(str) if conf else "MEDIUM"
+
+    d["status"] = "OPEN"
+    d["owner"] = "Supply"
+
+    why = pick(d, ["reason","driver","root_cause"])
+    d["recommended_action"] = d[why].astype(str) if why else "Assign resolution action"
+
+    var = pick(d, ["value_at_risk","impact_cr","impact","var","revenue_at_risk"])
+    d["value_at_risk"] = d[var] if var else 0.0
+
+    ts = pick(d, ["ts","created_at","updated_at","week_id"])
+    d["ts"] = d[ts] if ts else ""
+
+    return d[["module","source","entity","exception_type","severity","confidence","status","owner","recommended_action","value_at_risk","ts"]]
+
+u = []
+u.append(normalize_hunting_approvals(h_approval))
+u.append(normalize_forward_signal(h_signal))
+u.append(normalize_supply_stress(stress_sku, "SKU"))
+u.append(normalize_supply_stress(stress_plant, "Plant"))
+
+unified = pd.concat([x for x in u if x is not None and not x.empty], ignore_index=True) if any((x is not None and not x.empty) for x in u) else pd.DataFrame(
+    columns=["module","source","entity","exception_type","severity","confidence","status","owner","recommended_action","value_at_risk","ts"]
+)
+
+# ------------------------------------------------------------
+# Executive Ordering Logic (Decision Engine)
+# ------------------------------------------------------------
+SEV_MAP = {"CRITICAL": 400, "HIGH": 300, "MEDIUM": 200, "LOW": 100}
+CONF_MAP = {"HIGH": 30, "MEDIUM": 20, "LOW": 10}
+STATUS_MAP = {
+    "PENDING": 60, "OPEN": 50, "IN_PROGRESS": 40, "WATCHLIST": 30,
+    "CLOSED": 10, "APPROVED": 5, "REJECTED": 5
+}
+MOD_MAP = {"HUNTING": 2, "SUPPLY": 1}
+
+if not unified.empty:
+    unified["severity_n"] = unified["severity"].map(lambda x: SEV_MAP.get(norm_upper(x), 0))
+    unified["confidence_n"] = unified["confidence"].map(lambda x: CONF_MAP.get(norm_upper(x), 0))
+    unified["status_n"] = unified["status"].map(lambda x: STATUS_MAP.get(norm_upper(x), 0))
+    unified["module_n"] = unified["module"].map(lambda x: MOD_MAP.get(norm_upper(x), 0))
+
+    unified["value_at_risk"] = pd.to_numeric(
+        unified["value_at_risk"].astype(str).replace({"": None, "nan": None, "None": None}),
+        errors="coerce"
+    ).fillna(0.0)
+
+    # recency best-effort
+    unified["ts_n"] = pd.to_numeric(unified["ts"], errors="coerce").fillna(0)
+
+    # Composite decision score (transparent)
+    # status carries meeting urgency, then severity, then confidence, then VAR
+    unified["decision_score"] = (
+        unified["status_n"]
+        + unified["severity_n"] / 10.0
+        + unified["confidence_n"]
+        + np.log1p(unified["value_at_risk"].clip(lower=0)) * 5.0
+        + unified["module_n"]
+    )
+
+    unified = unified.sort_values(
+        by=["status_n","severity_n","confidence_n","value_at_risk","module_n","ts_n","entity"],
+        ascending=[False, False, False, False, False, False, True],
+    )
+
+# ------------------------------------------------------------
+# Filters
+# ------------------------------------------------------------
+f1,f2,f3,f4,f5 = st.columns([0.18,0.20,0.20,0.20,0.22], gap="large")
+with f1:
+    mod = st.selectbox("Module", ["ALL","HUNTING","SUPPLY"], 0)
+with f2:
+    sev = st.selectbox("Severity", ["ALL","CRITICAL","HIGH","MEDIUM","LOW"], 0)
+with f3:
+    stat = st.selectbox("Status", ["ALL","PENDING","OPEN","IN_PROGRESS","WATCHLIST","CLOSED"], 0)
+with f4:
+    view = st.selectbox("View", ["Executive","Planner"], 0)
+with f5:
+    top_n = st.selectbox("Top Decisions", [10, 20, 30, 50], 20)
+
+def apply_filters(df: pd.DataFrame) -> pd.DataFrame:
+    d = df.copy()
+    if d.empty:
+        return d
+    if mod != "ALL":
+        d = d[d["module"].astype(str).str.upper().eq(mod)]
+    if sev != "ALL":
+        d = d[d["severity"].astype(str).str.upper().eq(sev)]
+    if stat != "ALL":
+        d = d[d["status"].astype(str).str.upper().eq(stat)]
+    return d
+
+uf = apply_filters(unified)
+
+st.divider()
+
+# ------------------------------------------------------------
+# Tabs: Decision Engine views
+# ------------------------------------------------------------
+tab1, tab2, tab3 = st.tabs(["Top Decisions This Week", "Unified Queue", "Resolution Plan"])
+
+with tab1:
+    st.subheader("Top Decisions This Week")
+    st.caption("Sorted for meeting flow: PENDING → HIGH severity → HIGH confidence → highest value-at-risk")
+
+    if uf.empty:
+        st.info("No items available for current filters.")
+    else:
+        top = uf.head(int(top_n)).copy()
+
+        # Executive chart: mix by module + severity
+        mix = top.groupby(["module","severity"]).size().reset_index(name="count")
+        if not mix.empty:
+            fig = px.bar(mix, x="severity", y="count", color="module")
+            fig.update_layout(height=320, margin=dict(l=10,r=10,t=30,b=10))
+            st.plotly_chart(fig, use_container_width=True)
+
+        show_cols = ["module","entity","exception_type","severity","confidence","status","owner","recommended_action","value_at_risk","decision_score"]
+        st.dataframe(arrow_safe(top[show_cols]), use_container_width=True, hide_index=True)
+
+        if view == "Planner":
+            st.markdown("### Log a decision for the selected item")
+            sel = st.selectbox("Pick an entity", top["entity"].astype(str).tolist(), 0)
+            decision = st.text_input("Decision", placeholder="Approve / Allocate / Expedite / Pause / Re-plan / Escalate…")
+            owner = st.selectbox("Owner", ["Supervisor","Supply Head","Commercial Head","CFO"], 0)
+            notes = st.text_area("Notes", placeholder="Why + scope + by-when + executor")
+            sev2 = st.selectbox("Decision Severity", ["LOW","MEDIUM","HIGH"], 1)
+            conf2 = st.selectbox("Decision Confidence", ["LOW","MEDIUM","HIGH"], 2)
+
+            if st.button("Log decision", type="primary"):
+                rec = {
+                    "ts": now_ts(),
+                    "module": "GOVERNANCE",
+                    "page": "Supply Sync",
+                    "entity": sel,
+                    "owner": owner,
+                    "decision": decision,
+                    "severity": sev2,
+                    "confidence": conf2,
+                    "notes": notes or "",
+                }
+                append_csv(FILES["decisions"], rec)
+                append_csv(FILES["audit"], {
+                    "ts": rec["ts"],
+                    "event": "DECISION_LOGGED",
+                    "module": rec["module"],
+                    "page": rec["page"],
+                    "owner": rec["owner"],
+                    "notes": rec["notes"],
+                })
+                st.success("Decision logged to out/decisions.csv and out/audit_log.csv")
+
+with tab2:
+    st.subheader("Unified Exceptions Queue (Full)")
+    if uf.empty:
+        st.info("No queue items for current filters.")
+    else:
+        # distribution of decision score
+        tmp = uf.head(200).copy()
+        if "decision_score" in tmp.columns:
+            fig = px.histogram(tmp, x="decision_score", color="module")
+            fig.update_layout(height=300, margin=dict(l=10,r=10,t=30,b=10))
+            st.plotly_chart(fig, use_container_width=True)
+
+        st.dataframe(arrow_safe(uf.head(300)), use_container_width=True, hide_index=True)
+
+with tab3:
+    st.subheader("Resolution Plan (Supply Actions)")
+    st.caption("This is the execution list — owner + what + by when")
+
+    if actions.empty:
+        st.info("No out/supply_resolution_actions.csv found.")
+    else:
+        # Sort actions with best-effort priority
+        a = actions.copy()
+        pr = pick(a, ["priority_score","priority","score","severity_score"])
+        if pr:
+            a[pr] = pd.to_numeric(a[pr], errors="coerce").fillna(0)
+            a = a.sort_values(pr, ascending=False)
+        st.dataframe(arrow_safe(a.head(400)), use_container_width=True, hide_index=True)
+
+    st.markdown("---")
+    st.subheader("Recent Governance Decisions")
+    if FILES["decisions"].exists():
+        try:
+            d = pd.read_csv(FILES["decisions"]).tail(120)
+            st.dataframe(arrow_safe(d), use_container_width=True, hide_index=True)
+        except Exception:
+            st.info("decisions.csv exists but could not be read.")
+    else:
+        st.info("No out/decisions.csv yet.")

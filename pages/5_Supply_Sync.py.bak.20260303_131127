@@ -1,0 +1,9 @@
+import streamlit as st
+from core.ui_theme import apply_ivory, section
+
+st.set_page_config(page_title="Supply Sync", layout="wide")
+apply_ivory()
+
+st.title("Supply Chain Synchronization")
+section("Scope", "Pipeline demand signals + distributor replenishment signals + inventory imbalance + network triggers.")
+st.info("Next build: forward demand signal + inventory balance matrix + rebalance shortlist.")

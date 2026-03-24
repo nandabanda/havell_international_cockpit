@@ -1,0 +1,3 @@
+opportunity_id,account_name,account_type,vertical,market,country,owner,stage,created_date,last_activity_date,expected_close_date,potential_annual_value_local,currency,win_probability_pct,quoted_price_index_vs_list,discount_pct,margin_floor_pct,expected_gm_pct,logistics_cost_pct,fx_assumption,payment_terms_days,notes
+HNT-0001,OEM Alpha,OEM,Switchgear,UAE,UAE,Owner A,Qualification,2026-01-10,2026-02-20,2026-04-15,2500000,AED,45,0.96,6,18,20,3,1.00,60,"Initial qualification done"
+HNT-0002,EPC Beta,EPC,Cables,KSA,KSA,Owner B,Proposal,2026-01-05,2026-02-10,2026-03-30,1800000,SAR,62,0.93,10,16,14,4,1.00,45,"Proposal shared, waiting feedback"

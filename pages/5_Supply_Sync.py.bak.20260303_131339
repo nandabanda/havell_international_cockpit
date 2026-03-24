@@ -1,0 +1,33 @@
+import streamlit as st
+from core.ui_theme import apply_ivory, section
+def arrow_safe(df: pd.DataFrame) -> pd.DataFrame:
+    """Arrow-safe rendering: coerces mixed-type numeric columns (e.g., qty with '')."""
+    if df is None:
+        return df
+    # Some callers may pass non-DF accidentally; fail soft
+    if not hasattr(df, "columns"):
+        return df
+    if getattr(df, "empty", False):
+        return df
+    d = df.copy()
+    for c in d.columns:
+        cl = str(c).lower()
+        if any(k in cl for k in [
+            "qty","quantity","units","cases",
+            "value","sales","revenue","impact","risk",
+            "doh","days","fill","otif","service",
+            "score","severity","confidence",
+            "short","gap","stock","inv","cost","margin"
+        ]):
+            d[c] = pd.to_numeric(
+                d[c].astype(str).replace({"": None, "nan": None, "None": None}),
+                errors="coerce"
+            )
+    return d
+
+st.set_page_config(page_title="Supply Sync", layout="wide")
+apply_ivory()
+
+st.title("Supply Chain Synchronization")
+section("Scope", "Pipeline demand signals + distributor replenishment signals + inventory imbalance + network triggers.")
+st.info("Next build: forward demand signal + inventory balance matrix + rebalance shortlist.")
