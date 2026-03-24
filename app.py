@@ -3,13 +3,13 @@ import streamlit as st
 st.set_page_config(
     page_title="SYDIAI Havell Cockpit",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="expanded"
 )
 
 st.markdown("""
 <style>
 section[data-testid="stSidebarNav"] {display: none !important;}
-header[data-testid="stHeader"] {visibility: hidden;}
+
 </style>
 """, unsafe_allow_html=True)
 import streamlit as st
