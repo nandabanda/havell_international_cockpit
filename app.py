@@ -1,4 +1,18 @@
 import streamlit as st
+
+st.set_page_config(
+    page_title="SYDIAI Havell Cockpit",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
+
+st.markdown("""
+<style>
+section[data-testid="stSidebarNav"] {display: none !important;}
+header[data-testid="stHeader"] {visibility: hidden;}
+</style>
+""", unsafe_allow_html=True)
+import streamlit as st
 from core.ui_theme import apply_ivory
 from core.nav_shell import render_premium_nav
 
