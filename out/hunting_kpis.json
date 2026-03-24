@@ -1,0 +1,12 @@
+{
+  "as_of": "2026-03-02",
+  "pipeline_total_local": 4300000.0,
+  "pipeline_weighted_local": 2241000.0,
+  "pipeline_quality_ratio_pct": 52.1,
+  "active_deals": 2,
+  "overdue_actions": 1,
+  "stage_counts": {
+    "Qualification": 1,
+    "Proposal": 1
+  }
+}

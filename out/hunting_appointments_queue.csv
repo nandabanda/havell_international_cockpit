@@ -1,0 +1,3 @@
+ts,market,opp_id,project_id,project_name,contact_name,role,email,phone,priority,owner,meeting_status,pipeline_stage,next_action,due_date,last_touch,notes,value_musd,meeting_date,confidence,_due,_meeting,_sla_flag,_sla_score,_score,_decision
+2026-03-12T06:13:09.245625,Nigeria,OPP-001,PRJ-NG-01,Lagos Commercial Complex,Ahmed Bello,Project Director,ahmed@example.com,234000000,High,Unassigned,Pending,Opportunity,Outreach,2026-03-12,2026-03-12T06:13:09.245625,nan,0.0,,0.7,2026-03-12,,Due soon,2,75,GO
+2026-03-09T09:28:33.990219,Nigeria,OPP-002,PRJ-NG-02,Abuja Residential Towers,David Okafor,Procurement Head,david@example.com,234000001,High,Unassigned,Pending,Opportunity,Outreach,2026-03-09,2026-03-09T09:28:33.990219,,0.0,,0.7,2026-03-09,,Overdue,3,68,HOLD

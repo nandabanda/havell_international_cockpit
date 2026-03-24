@@ -1,0 +1,53 @@
+reco_type,cluster_id,micro_market_id,country,region,city,district,attractiveness_score_0_100,whitespace_score_0_100,coverage_index_0_1,distributor_gap,recommended_distributor_count,current_distributor_count,data_readiness_0_100,cluster_similarity_0_100,why_now
+WINNER,0,MM-IN-BAN-038,Indonesia,Sumatra,Bandung,District-1,57.7,25.0,0.62,1,2,1,100,24.5,strong demand | high growth | construction momentum | serviceability
+WINNER,0,MM-UA-ABU-015,UAE,UAE,Abu Dhabi,District-6,52.5,25.1,0.57,1,2,1,100,39.1,strong demand | high growth | construction momentum | serviceability
+WINNER,0,MM-UA-ABU-032,UAE,UAE,Abu Dhabi,District-6,49.7,19.6,0.585,0,1,2,100,22.4,high growth | serviceability
+WINNER,0,MM-IN-BEN-004,India,North,Bengaluru,District-7,57.4,13.0,0.76,0,1,1,100,30.6,high growth | construction momentum
+WINNER,0,MM-SA-JED-006,Saudi,KSA,Jeddah,District-6,34.2,4.4,0.87,0,1,1,100,10.3,balanced indicators
+LOOKALIKE,0,MM-UA-ABU-015,UAE,UAE,Abu Dhabi,District-6,52.5,25.1,0.57,1,2,1,100,39.1,strong demand | high growth | construction momentum | serviceability
+LOOKALIKE,0,MM-IN-BEN-004,India,North,Bengaluru,District-7,57.4,13.0,0.76,0,1,1,100,30.6,high growth | construction momentum
+LOOKALIKE,0,MM-IN-BAN-038,Indonesia,Sumatra,Bandung,District-1,57.7,25.0,0.62,1,2,1,100,24.5,strong demand | high growth | construction momentum | serviceability
+LOOKALIKE,0,MM-UA-ABU-032,UAE,UAE,Abu Dhabi,District-6,49.7,19.6,0.585,0,1,2,100,22.4,high growth | serviceability
+LOOKALIKE,0,MM-SA-JED-006,Saudi,KSA,Jeddah,District-6,34.2,4.4,0.87,0,1,1,100,10.3,balanced indicators
+WINNER,1,MM-SA-JED-039,Saudi,KSA,Jeddah,District-4,66.4,71.4,0.0,2,2,0,100,18.0,strong demand | construction momentum | serviceability | low current coverage
+WINNER,1,MM-IN-SUR-058,Indonesia,Java,Surabaya,District-5,64.8,68.8,0.0,2,2,0,100,0.1,strong demand | high growth | construction momentum | serviceability
+WINNER,1,MM-IN-BEN-002,India,West,Bengaluru,District-1,66.7,66.0,0.0,2,2,0,100,0.0,strong demand | high growth | construction momentum | serviceability
+WINNER,1,MM-IN-BAN-022,Indonesia,Sumatra,Bandung,District-8,58.9,65.9,0.0,2,2,0,100,9.5,strong demand | serviceability | low current coverage
+WINNER,1,MM-SA-JED-041,Saudi,KSA,Jeddah,District-8,59.1,63.9,0.0,2,2,0,100,14.7,strong demand | construction momentum | serviceability | lower competition
+LOOKALIKE,1,MM-IN-JAK-028,Indonesia,Java,Jakarta,District-7,54.9,61.2,0.0,2,2,0,100,38.3,strong demand | construction momentum | serviceability | low current coverage
+LOOKALIKE,1,MM-UA-ABU-016,UAE,UAE,Abu Dhabi,District-3,56.0,62.3,0.0,2,2,0,100,32.1,strong demand | high growth | serviceability | lower competition
+LOOKALIKE,1,MM-IN-MUM-001,India,South,Mumbai,District-4,52.0,47.0,0.0,1,1,0,100,30.4,construction momentum | serviceability | low current coverage
+LOOKALIKE,1,MM-SA-RIY-036,Saudi,KSA,Riyadh,District-6,46.3,53.2,0.0,2,2,0,100,26.6,strong demand | construction momentum | serviceability | low current coverage
+LOOKALIKE,1,MM-IN-SUR-035,Indonesia,Sumatra,Surabaya,District-2,46.9,44.6,0.0,1,1,0,100,26.5,construction momentum | low current coverage
+WINNER,2,MM-IN-DEL-052,India,West,Delhi,District-2,52.6,50.2,0.0,2,2,0,100,100.0,high growth | construction momentum | serviceability | low current coverage
+LOOKALIKE,2,MM-IN-DEL-052,India,West,Delhi,District-2,52.6,50.2,0.0,2,2,0,100,100.0,high growth | construction momentum | serviceability | low current coverage
+WINNER,3,MM-UA-DUB-024,UAE,UAE,Dubai,District-8,53.4,47.9,0.0,1,1,0,100,16.9,construction momentum | serviceability | lower competition | low current coverage
+WINNER,3,MM-SA-RIY-044,Saudi,KSA,Riyadh,District-3,46.4,38.1,0.0,2,2,0,100,46.8,construction momentum | serviceability | lower competition | low current coverage
+WINNER,3,MM-SA-RIY-003,Saudi,KSA,Riyadh,District-7,44.0,40.5,0.0,2,2,0,100,34.3,serviceability | low current coverage
+WINNER,3,MM-IN-BEN-045,India,South,Bengaluru,District-2,42.6,40.9,0.0,2,2,0,100,28.3,high growth | serviceability | low current coverage
+WINNER,3,MM-SA-JED-011,Saudi,KSA,Jeddah,District-7,47.7,39.3,0.0,1,1,0,100,6.3,high growth | construction momentum | serviceability | lower competition
+LOOKALIKE,3,MM-UA-ABU-023,UAE,UAE,Abu Dhabi,District-5,40.7,32.0,0.0,1,1,0,100,50.3,construction momentum | serviceability | low current coverage
+LOOKALIKE,3,MM-SA-RIY-044,Saudi,KSA,Riyadh,District-3,46.4,38.1,0.0,2,2,0,100,46.8,construction momentum | serviceability | lower competition | low current coverage
+LOOKALIKE,3,MM-UA-ABU-030,UAE,UAE,Abu Dhabi,District-4,39.9,31.5,0.0,1,1,0,100,46.3,construction momentum | lower competition | low current coverage
+LOOKALIKE,3,MM-SA-RIY-003,Saudi,KSA,Riyadh,District-7,44.0,40.5,0.0,2,2,0,100,34.3,serviceability | low current coverage
+LOOKALIKE,3,MM-IN-MUM-037,India,South,Mumbai,District-8,44.9,34.5,0.0,1,1,0,100,31.2,construction momentum | serviceability | lower competition | low current coverage
+WINNER,4,MM-IN-BAN-040,Indonesia,Sumatra,Bandung,District-6,72.3,71.3,0.0,2,2,0,100,5.9,strong demand | high growth | serviceability | lower competition
+WINNER,4,MM-UA-DUB-055,UAE,UAE,Dubai,District-2,61.9,66.9,0.0,2,2,0,100,17.9,strong demand | high growth | construction momentum | low current coverage
+WINNER,4,MM-IN-SUR-026,Indonesia,Java,Surabaya,District-8,61.0,68.2,0.0,2,2,0,100,0.0,strong demand | high growth | construction momentum | low current coverage
+WINNER,4,MM-UA-ABU-007,UAE,UAE,Abu Dhabi,District-3,57.6,64.1,0.0,2,2,0,100,32.2,strong demand | high growth | construction momentum | lower competition
+WINNER,4,MM-IN-MUM-042,India,South,Mumbai,District-7,55.0,62.1,0.0,2,2,0,100,38.2,strong demand | lower competition | low current coverage
+LOOKALIKE,4,MM-IN-MUM-042,India,South,Mumbai,District-7,55.0,62.1,0.0,2,2,0,100,38.2,strong demand | lower competition | low current coverage
+LOOKALIKE,4,MM-SA-RIY-021,Saudi,KSA,Riyadh,District-7,45.2,51.6,0.0,2,2,0,100,37.2,strong demand | low current coverage
+LOOKALIKE,4,MM-IN-BEN-053,India,North,Bengaluru,District-1,56.2,57.3,0.0,2,2,0,100,36.2,strong demand | high growth | low current coverage
+LOOKALIKE,4,MM-IN-JAK-029,Indonesia,Sumatra,Jakarta,District-2,57.7,47.4,0.28,1,2,1,100,32.3,strong demand | high growth | lower competition | low current coverage
+LOOKALIKE,4,MM-UA-ABU-007,UAE,UAE,Abu Dhabi,District-3,57.6,64.1,0.0,2,2,0,100,32.2,strong demand | high growth | construction momentum | lower competition
+WINNER,5,MM-IN-MUM-005,India,West,Mumbai,District-7,50.5,49.8,0.0,1,1,0,100,27.7,high growth | serviceability | lower competition | low current coverage
+WINNER,5,MM-SA-JED-033,Saudi,KSA,Jeddah,District-4,48.2,56.1,0.0,1,1,0,100,0.0,strong demand | high growth | construction momentum | low current coverage
+WINNER,5,MM-IN-BAN-025,Indonesia,Java,Bandung,District-3,50.8,53.8,0.0,1,1,0,100,0.0,strong demand | construction momentum | serviceability | lower competition
+WINNER,5,MM-IN-JAK-054,Indonesia,Sumatra,Jakarta,District-7,44.1,56.7,0.0,1,1,0,100,2.2,strong demand | construction momentum | low current coverage
+WINNER,5,MM-IN-DEL-031,India,South,Delhi,District-7,42.8,45.3,0.0,1,1,0,100,54.3,strong demand | high growth | lower competition | low current coverage
+LOOKALIKE,5,MM-IN-DEL-031,India,South,Delhi,District-7,42.8,45.3,0.0,1,1,0,100,54.3,strong demand | high growth | lower competition | low current coverage
+LOOKALIKE,5,MM-UA-ABU-020,UAE,UAE,Abu Dhabi,District-2,41.3,26.1,0.31,0,1,1,100,31.6,lower competition | low current coverage
+LOOKALIKE,5,MM-IN-JAK-017,Indonesia,Sumatra,Jakarta,District-7,29.7,25.4,0.0,1,1,0,100,28.9,construction momentum | lower competition | low current coverage
+LOOKALIKE,5,MM-IN-DEL-060,India,South,Delhi,District-1,39.3,30.2,0.23,0,1,1,100,28.7,construction momentum | lower competition | low current coverage
+LOOKALIKE,5,MM-IN-MUM-005,India,West,Mumbai,District-7,50.5,49.8,0.0,1,1,0,100,27.7,high growth | serviceability | lower competition | low current coverage

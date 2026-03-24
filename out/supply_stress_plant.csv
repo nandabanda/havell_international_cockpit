@@ -1,0 +1,7 @@
+week_id,plant_id,total_demand,total_capacity,max_util,skus_tight,utilization,stress_band
+2026-02-02,UNKNOWN,0.0,0.0,,0,,Unknown
+2026-02-09,UNKNOWN,2730.0,0.0,,0,,Unknown
+2026-02-16,UNKNOWN,3188.6190476190477,0.0,,0,,Unknown
+2026-02-23,UNKNOWN,4684.788822072114,0.0,,0,,Unknown
+2026-03-02,UNKNOWN,5200.310305873905,0.0,,0,,Unknown
+2026-03-09,UNKNOWN,4005.6903669677295,0.0,,0,,Unknown

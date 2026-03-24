@@ -1,0 +1,6 @@
+close_bucket,weighted_pipeline_local
+0-30,1116000.0
+31-60,1125000.0
+61-90,0.0
+90+,0.0
+Unknown,0.0

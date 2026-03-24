@@ -1,0 +1,17 @@
+{
+  "avg_stage_days": {
+    "Proposal": NaN,
+    "Qualification": 19.5,
+    "Target": 11.5,
+    "Technical": 20.0
+  },
+  "true_conversion_pct": {
+    "Target_to_Qualification": 100.0,
+    "Qualification_to_Technical": 50.0,
+    "Technical_to_Proposal": 100.0,
+    "Proposal_to_Negotiation": 0.0,
+    "Negotiation_to_Won": 0.0,
+    "Won_to_Lost": 0.0
+  },
+  "avg_sales_cycle_days": 0
+}

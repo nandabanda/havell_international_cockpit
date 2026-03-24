@@ -1,0 +1,16 @@
+{
+  "as_of": "2026-03-02",
+  "k": 6,
+  "features_used": [
+    "demand_proxy_index",
+    "growth_proxy_index",
+    "construction_velocity_index",
+    "infrastructure_spend_index",
+    "affluence_index",
+    "retail_density_index",
+    "logistics_access_index",
+    "competitive_intensity_index",
+    "coverage_index_0_1"
+  ],
+  "top_cluster_by_whitespace": 1
+}

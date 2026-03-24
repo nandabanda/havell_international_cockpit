@@ -1,0 +1,42 @@
+{
+  "as_of": "2026-03-02",
+  "top_reasons": [
+    {
+      "event_type": "EXIT",
+      "reason_code": "INFO_MISSING",
+      "count": 1
+    },
+    {
+      "event_type": "EXIT",
+      "reason_code": "LOST_COMPETITOR",
+      "count": 1
+    },
+    {
+      "event_type": "EXIT",
+      "reason_code": "PRICE_PUSHBACK",
+      "count": 1
+    },
+    {
+      "event_type": "STALL",
+      "reason_code": "APPROVAL_PENDING",
+      "count": 1
+    },
+    {
+      "event_type": "STALL",
+      "reason_code": "CUSTOMER_DELAY",
+      "count": 1
+    }
+  ],
+  "heatmap": [
+    {
+      "owner": "Owner A",
+      "stage": "Qualification",
+      "aging_pressure_days": 15.7
+    },
+    {
+      "owner": "Owner B",
+      "stage": "Proposal",
+      "aging_pressure_days": NaN
+    }
+  ]
+}

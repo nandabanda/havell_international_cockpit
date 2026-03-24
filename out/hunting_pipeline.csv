@@ -1,0 +1,7 @@
+opp_id,account,project,country,stage,value_musd,confidence,owner,priority
+OPP-005,L&T Construction,Real Estate opportunity in Singapore,Singapore,Qualified,169.0,High,Regional Sales,High
+OPP-004,Shapoorji Pallonji,Real Estate opportunity in India,India,Solutioning,117.0,High,Channel Lead,High
+OPP-008,Jakson Solar,Infrastructure opportunity in Indonesia,Indonesia,Solutioning,165.8,High,Key Accounts,High
+OPP-003,Adani Infra,Infrastructure opportunity in Singapore,Singapore,Qualified,47.0,High,Key Accounts,High
+OPP-001,Adani Infra,Real Estate opportunity in UAE,UAE,Solutioning,78.8,High,Key Accounts,High
+OPP-007,Adani Infra,Smart City opportunity in Saudi Arabia,Saudi Arabia,Solutioning,32.3,Medium,BD Lead,Medium

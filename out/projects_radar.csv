@@ -1,0 +1,13 @@
+project_id,project_name,country,city,segment,stage,est_value_musd,confidence
+PRJ-IN-1,Delhi Opportunity Cluster 1,India,Delhi,Commercial,Planning,75,0.7
+PRJ-IN-2,Bengaluru Opportunity Cluster 2,India,Bengaluru,Residential,Construction,159,0.83
+PRJ-IN-3,Bengaluru Opportunity Cluster 3,India,Bengaluru,Commercial,Planning,71,0.64
+PRJ-IN-4,Bengaluru Opportunity Cluster 4,India,Bengaluru,Institutional,Award,29,0.96
+PRJ-IN-5,Bengaluru Opportunity Cluster 5,India,Bengaluru,Institutional,Construction,78,0.96
+PRJ-IN-6,Hyderabad Opportunity Cluster 6,India,Hyderabad,Residential,Award,81,0.8
+PRJ-IN-7,Delhi Opportunity Cluster 7,India,Delhi,Commercial,Construction,60,0.69
+PRJ-IN-8,Mumbai Opportunity Cluster 8,India,Mumbai,Industrial,Award,13,0.95
+PRJ-IN-9,Mumbai Opportunity Cluster 9,India,Mumbai,Industrial,Tender,90,0.86
+PRJ-IN-10,Bengaluru Opportunity Cluster 10,India,Bengaluru,Institutional,Award,70,0.9
+PRJ-IN-11,Bengaluru Opportunity Cluster 11,India,Bengaluru,Residential,Tender,12,0.71
+PRJ-IN-12,Hyderabad Opportunity Cluster 12,India,Hyderabad,Industrial,Award,10,0.63

@@ -1,0 +1,11 @@
+{
+  "latest_week_id": "2026-03-09",
+  "plants": 1,
+  "skus": 4,
+  "tight_skus": 0,
+  "max_sku_utilization": NaN,
+  "total_demand_qty": 4005.6903669677295,
+  "total_capacity_qty": 0.0,
+  "resolution_actions": 0,
+  "stress_threshold": 0.9
+}

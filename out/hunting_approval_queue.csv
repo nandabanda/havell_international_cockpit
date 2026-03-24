@@ -1,0 +1,3 @@
+opportunity_id,account_name,market,vertical,stage,owner,approval_type,status,requested_date,approved_date,requested_discount_pct,approved_discount_pct,margin_floor_pct,expected_gm_pct,corridor_ok,expected_value_local,win_probability_pct,potential_annual_value_local,approver,notes
+HNT-0002,EPC Beta,KSA,Cables,Proposal,Owner B,MARGIN_EXCEPTION,PENDING,2026-02-15,,12,,16,14,NO,1116000.0,62.0,1800000.0,,
+HNT-0005,,,,,,SPA_OVERRIDE,APPROVED,2026-02-20,2026-02-22,8,8.0,16,17,YES,,,,Approver A,Approved within corridor

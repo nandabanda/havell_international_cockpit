@@ -1,0 +1,25 @@
+{
+  "as_of": "2026-03-02",
+  "ceo_summary": [
+    "Weighted pipeline is 2.24M (52.1% quality ratio vs total pipeline).",
+    "Expected closures: 1.12M in 0\u201330 days, 1.12M in 31\u201360 days (weighted).",
+    "Pipeline is concentrated in UAE at 50.2% of weighted value.",
+    "Top vertical is Switchgear at 50.2% of weighted value.",
+    "There are 1 pending guardrail approvals that may delay proposals or force margin exceptions.",
+    "Top stall drivers (last 90 days): EXIT/INFO_MISSING: 1; EXIT/LOST_COMPETITOR: 1; EXIT/PRICE_PUSHBACK: 1; STALL/APPROVAL_PENDING: 1; STALL/CUSTOMER_DELAY: 1."
+  ],
+  "top_deals": [
+    {
+      "opportunity_id": "HNT-0002",
+      "headline": "\u2014 \u2014 \u2014 \u2014 0 weighted \u2014 62% win",
+      "detail": "Market: KSA | Vertical: Cables | Owner: Owner B | Inactive: 20 days | Slippage risk: 20/100.",
+      "action": "Keep cadence; move to next milestone."
+    },
+    {
+      "opportunity_id": "HNT-0001",
+      "headline": "\u2014 \u2014 \u2014 \u2014 0 weighted \u2014 45% win",
+      "detail": "Market: UAE | Vertical: Switchgear | Owner: Owner A | Inactive: 10 days | Slippage risk: 0/100.",
+      "action": "Keep cadence; move to next milestone."
+    }
+  ]
+}

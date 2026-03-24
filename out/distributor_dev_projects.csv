@@ -1,0 +1,13 @@
+project_id,project_name,country,city,cluster_type,recommended_model,outlet_potential,covered_outlets,whitespace_outlets,coverage_pct,value_headroom_musd,confidence,ai_score,priority
+MM-IN-1,Delhi Development Pocket 1,India,Delhi,Mixed Retail,New Distributor,450,346,104,76.9,17.8,0.77,84,Medium
+MM-IN-2,Delhi Development Pocket 2,India,Delhi,General Trade,Expand Existing,655,451,204,68.9,12.4,0.88,86,Medium
+MM-IN-3,Mumbai Development Pocket 3,India,Mumbai,Dense Urban,New Distributor,638,462,176,72.4,15.6,0.76,75,Watch
+MM-IN-4,Mumbai Development Pocket 4,India,Mumbai,General Trade,Expand Existing,382,203,179,53.1,7.9,0.92,92,High
+MM-IN-5,Delhi Development Pocket 5,India,Delhi,General Trade,Expand Existing,590,432,158,73.2,6.3,0.72,85,Medium
+MM-IN-6,Delhi Development Pocket 6,India,Delhi,General Trade,New Distributor,247,161,86,65.2,16.1,0.82,81,Medium
+MM-IN-7,Mumbai Development Pocket 7,India,Mumbai,Institutional Cluster,Expand Existing,416,208,208,50.0,21.2,0.92,80,Medium
+MM-IN-8,Hyderabad Development Pocket 8,India,Hyderabad,Mixed Retail,Specialized Partner,203,97,106,47.8,14.1,0.76,74,Watch
+MM-IN-9,Hyderabad Development Pocket 9,India,Hyderabad,Institutional Cluster,New Distributor,511,307,204,60.1,4.3,0.91,79,Watch
+MM-IN-10,Bengaluru Development Pocket 10,India,Bengaluru,General Trade,New Distributor,224,139,85,62.1,14.7,0.64,81,Medium
+MM-IN-11,Hyderabad Development Pocket 11,India,Hyderabad,General Trade,New Distributor,620,334,286,53.9,15.5,0.76,89,High
+MM-IN-12,Hyderabad Development Pocket 12,India,Hyderabad,Mixed Retail,New Distributor,520,284,236,54.6,12.8,0.77,91,High

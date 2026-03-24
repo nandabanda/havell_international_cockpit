@@ -1,0 +1,4 @@
+ts,opp_id,market,project_name,contact_name,owner,priority,pipeline_stage,meeting_status,next_action,due_date,meeting_date,confidence,notes
+2026-03-09T09:28:33.990219,OPP-002,Nigeria,Abuja Residential Towers,David Okafor,Unassigned,High,Opportunity,Pending,Outreach,2026-03-09,,0.7,
+2026-03-12T06:13:06.101120,OPP-001,Nigeria,Lagos Commercial Complex,Ahmed Bello,Unassigned,High,Opportunity,Pending,Outreach,2026-03-12,,0.7,
+2026-03-12T06:13:09.245625,OPP-001,Nigeria,Lagos Commercial Complex,Ahmed Bello,Unassigned,High,Opportunity,Pending,Outreach,2026-03-12,,0.7,nan

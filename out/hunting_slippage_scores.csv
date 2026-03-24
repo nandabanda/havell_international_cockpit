@@ -1,0 +1,3 @@
+opportunity_id,account_name,stage,expected_value_local,slippage_risk_score
+HNT-0002,EPC Beta,Proposal,1116000.0,20
+HNT-0001,OEM Alpha,Qualification,1125000.0,0
