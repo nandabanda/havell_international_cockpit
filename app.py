@@ -8,7 +8,6 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-section[data-testid="stSidebarNav"] {display: none !important;}
 
 </style>
 """, unsafe_allow_html=True)
